@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tristeza</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- FUENTES -->
+  <link href="https://fonts.googleapis.com/css2?family=Rock+3D&family=Alkatra&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      color: #fff;
+      font-family: 'Alkatra', cursive;
+      overflow: hidden;
+      text-align: center;
+      background-color: #000;
+      transition: background-color 4s ease;
+    }
+
+    .intro {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      animation: fadeZoom 3s ease forwards;
+      background: black;
+    }
+
+    @keyframes fadeZoom {
+      0% { opacity: 0; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    h1 {
+      font-family: 'Rock 3D', cursive;
+      font-size: 4rem;
+      margin-top: 1rem;
+    }
+    h3{
+      margin: 0;
+    }
+
+    .contenedor {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 50px 20px;
+    }
+
+    .typewriter {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid #fff;
+      animation: typing 4s steps(40) 1s forwards, blink 0.8s step-end infinite;
+      font-size: 1.8rem;
+      max-width: 80%;
+    }
+
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+
+    @keyframes blink {
+      50% { border-color: transparent }
+    }
+
+    .oculto {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 2s ease;
+    }
+
+    .visible {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 2s ease;
+    }
+
+    video {
+      margin-top: 30px;
+      max-width: 100%;
+    }
+
+    button {
+      /* margin-top: 40px; */
+      font-size: 1.2rem;
+      padding: 10px 25px;
+      border-radius: 8px;
+      background-color: #ffffff;
+      color: #000;
+      border: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #111;
+      color: #fff;
+      transform: scale(1.05);
+    }
+
+    button:active {
+      animation: shake 0.2s ease;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+
+    #final-text {
+      display: none;
+      font-size: 2rem;
+      margin-top: 50px;
+      white-space: nowrap;
+      overflow: hidden;
+      animation: finalZoom 4s ease forwards, blink 1s step-end infinite;
+    }
+
+    @keyframes finalZoom {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .emoji-rain-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .emoji-drop {
+      position: absolute;
+      top: -50px;
+      font-size: 18px;
+      animation: fall linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(110vh); }
+    }
+
+    #tristeza-profunda {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-top: 40px;
+      opacity: 0;
+      transition: opacity 3s ease;
+      visibility: hidden;
+    }
+
+    #tristeza-profunda.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .tristeza-video {
+      width: 500px;
+      opacity: 0.7;
+      animation: slowFadeIn 3s ease forwards;
+      filter: grayscale(100%);
+      max-width: 90vw;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    }
+
+    .texto-final {
+      font-size: 1.5rem;
+      color: #ccc;
+      font-style: italic;
+      animation: textFadeIn 4s ease forwards;
+      max-width: 90vw;
+    }
+
+    @keyframes slowFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 0.7;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes textFadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+
+    /* Fondo oscuro cuando se ignora */
+    body.darkened {
+      background-color: #000000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- EFECTO LLUVIA -->
+
+  <!-- AUDIO DE LLUVIA Y TRUENOS -->
+  <audio src="audio/lluvia.mp3" autoplay loop></audio>
+
+  <!-- INTRO -->
+  <div class="intro" id="intro">
+    <img src="img/ojos-con-lagrimas.png" alt="ojos tristes" width="400" />
+    <h1>TRISTEZA</h1>
+    <h3>mustio, melancólico, taciturno. funesto, deplorable, aciago, infausto, lamentable, luctuoso, 
+      lúgubre, trágico, desgraciado, nefasto. doloroso, duro, difícil, enojoso, amargo.</h3>
+  </div>
+
+  <div class="emoji-rain-container" id="emoji-rain"></div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="contenedor oculto" id="contenido">
+    <div class="typewriter" id="mensaje">DILE HOLA A TRISTEZA, NO LA IGNORES :(</div>
+
+    <video src="videos/tristeza-sinfondo.mp4" width="500" autoplay muted class="oculto" id="video" preload="auto"></video>
+
+    <button class="oculto" id="ignorarBtn">Ignorar</button>
+
+    <div id="tristeza-profunda" class="oculto">
+      <video src="videos/arrastra.mp4" alt="Tristeza arrastrada" class="tristeza-video" autoplay muted ></video>
+      <p class="texto-final">La tristeza no necesita ser ignorada... solo escuchada. </p>
+      <a href="index.html"> 
+        <button class="volver">Volver</button>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Mostrar después de la intro
+    setTimeout(() => {
+      document.getElementById('intro').style.display = 'none';
+      const cont = document.getElementById('contenido');
+      cont.classList.remove('oculto');
+      cont.classList.add('visible');
+
+      // Mostrar video y botón
+      setTimeout(() => {
+        document.getElementById('video').classList.remove('oculto');
+        document.getElementById('ignorarBtn').classList.remove('oculto');
+      }, 4000);
+    }, 8000);
+
+    // Botón Ignorar
+    document.getElementById('ignorarBtn').addEventListener('click', () => {
+      // Ocultar elementos previos
+      document.getElementById('video').style.display = 'none';
+      document.getElementById('ignorarBtn').style.display = 'none';
+      document.getElementById('mensaje').style.display = 'none';
+
+      // Oscurecer fondo
+      document.body.classList.add('darkened');
+
+      // Reducir volumen del audio lentamente
+      const audio = document.querySelector('audio');
+      const fadeAudio = setInterval(() => {
+        if (audio.volume > 0.05) {
+          audio.volume -= 0.01;
+        } else {
+          clearInterval(fadeAudio);
+          audio.volume = 0;
+          audio.pause();
+        }
+      }, 200);
+
+      // Mostrar la tristeza profunda tras 1 segundos
+      setTimeout(() => {
+        const tristezaDiv = document.getElementById('tristeza-profunda');
+        tristezaDiv.classList.remove('oculto');
+        tristezaDiv.classList.add('visible');
+      }, 1000);
+    });
+
+    // Efecto lluvia
+    const container = document.getElementById('emoji-rain');
+    function createDrop() {
+      const drop = document.createElement('div');
+      drop.classList.add('emoji-drop');
+      drop.textContent = '💧';
+      drop.style.left = Math.random() * 100 + 'vw';
+      drop.style.animationDuration = (Math.random() * 2 + 4) + 's';
+      container.appendChild(drop);
+      setTimeout(() => container.removeChild(drop), 6000);
+    }
+    setInterval(createDrop, 60);
+  </script>
+</body>
+</html>

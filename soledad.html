@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Proyecto de la Soledad</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    #container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #imagen {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 1;
+      transition: opacity 3s ease;
+    }
+
+    #frase {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2em;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <img id="imagen" src="img/soledad.webp" alt="imagen de soledad">
+    <div id="frase">"La soledad también habla, si sabes escucharla."</div>
+  </div>
+
+  <script>
+    window.onload = () => {
+      const imagen = document.getElementById("imagen");
+      const frase = document.getElementById("frase");
+
+      console.log("JS cargado ✅");
+
+      // Inicia el fade-out de la imagen y fade-in de la frase al mismo tiempo
+      setTimeout(() => {
+        imagen.style.opacity = "0";
+        frase.style.opacity = "1";
+        console.log("Imagen fade-out, frase fade-in");
+      }, 2000); // espera 2 segundos antes de iniciar
+    };
+  </script>
+</body>
+</html>

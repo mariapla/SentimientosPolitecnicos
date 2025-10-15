@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Miedo</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+  }
+  #volver {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: red;
+    color: white;
+    border: 2px solid white;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    padding: 6px 10px;
+    text-decoration: none;
+    z-index: 100;
+  }
+  h1 { margin: 20px; font-size: 24px; }
+  .game { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 900px; justify-content: center; margin:20px }
+  .column { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+  button {
+    font-family: 'Press Start 2P', 'Courier New', Courier, monospace;
+    font-size: 10px; padding:7px; cursor: pointer;
+    border: 2px solid #fff; text-align: left;
+    transition: background 0.2s, color 0.2s; width: 100%;
+  }
+  .fobia { background: #000; color: #fff; }
+  .definicion { background: #fff; color: #000; }
+  .selected { border: 2px solid black; letter-spacing: 3px; background-color: white; color: black; }
+  .hidden { visibility: hidden; }
+  .message {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-size: 14px;
+    text-align: center;
+    min-height: 40px;
+    font-family: 'Press Start 2P', cursive;
+  }
+  .gameover {
+    color: red;
+    font-size: 48px;
+    animation: blink 0.2s infinite alternate;
+  }
+  @keyframes blink { from { opacity: 1; } to { opacity: 0.3; } }
+
+  .restart { 
+    position: absolute;
+    top: 420px;
+    left: 10px;
+    background: red; color: white;
+    border: 2px solid white;
+    font-family: 'Press Start 2P', 'Courier New', Courier, monospace;
+    font-size: 10px;
+    padding: 6px 10px;
+    cursor: pointer;
+    width: auto;
+  }
+
+  #pantalla-aracnofobia {
+    display: none;
+    background: #000;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    flex-direction: column;
+    position: relative;
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+<a id="volver" href="index.html">Volver</a>
+
+<h1>El juego de las fobias</h1>
+<p>Haz click para emparejar una fobia y su definición</p>
+
+<div class="game" id="juego">
+  <div class="column" id="fobias"></div>
+  <div class="column" id="definiciones"></div>
+</div>
+
+<div class="message" id="message"></div>
+
+<div id="pantalla-aracnofobia">
+  <canvas id="canvas" width="1200" height="800"></canvas>
+  <button class="restart" onclick="iniciarJuego()">Volver al juego</button>
+</div>
+
+<script>
+const fobias = [
+  ["Aracnofobia", "Miedo a las arañas."],
+  ["Acrofobia", "Miedo a las alturas."],
+  ["Claustrofobia", "Miedo a los espacios cerrados."],
+  ["Agorafobia", "Miedo a los espacios abiertos o multitudes."],
+  ["Hidrofobia", "Miedo al agua."],
+  ["Nictofobia", "Miedo a la oscuridad."],
+  ["Aerofobia", "Miedo a volar."],
+  ["Tripofobia", "Miedo a los patrones repetitivos de agujeros o protuberancias."],
+  ["Ofidiofobia", "Miedo a las serpientes."],
+  ["Coulrofobia", "Miedo a los payasos."],
+  ["Misofobia", "Miedo a la suciedad o los gérmenes."],
+  ["Hemofobia", "Miedo a la sangre."],
+  ["Dentofobia", "Miedo a ir al dentista."]
+];
+
+const maxErrores = 5;
+let errores = 0;
+let seleccionFobia = null;
+let seleccionDef = null;
+let paresRestantes = fobias.length;
+let juegoIniciado = false;
+let botonesFobia = [];
+let botonesDef = [];
+
+function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+function iniciarJuego() {
+  document.getElementById("pantalla-aracnofobia").style.display = "none";
+  document.getElementById("pantalla-aracnofobia").style.opacity = 1;
+  document.getElementById("juego").style.display = "grid";
+  document.getElementById("message").innerHTML = "";
+
+  if (!juegoIniciado) {
+    errores = 0;
+    paresRestantes = fobias.length;
+
+    const fCol = document.getElementById("fobias");
+    const dCol = document.getElementById("definiciones");
+    fCol.innerHTML = "";
+    dCol.innerHTML = "";
+
+    const fShuf = shuffle([...fobias]);
+    const dShuf = shuffle([...fobias]);
+
+    botonesFobia = fShuf.map(f => {
+      const btn = document.createElement("button");
+      btn.className = "fobia";
+      btn.textContent = f[0];
+      btn.onclick = () => {
+        if (f[0] === "Aracnofobia") return mostrarPantallaAracnofobia();
+        seleccionarFobia(btn, f[0]);
+      };
+      fCol.appendChild(btn);
+      return {nombre: f[0], btn};
+    });
+
+    botonesDef = dShuf.map(f => {
+      const btn = document.createElement("button");
+      btn.className = "definicion";
+      btn.textContent = f[1];
+      btn.onclick = () => {
+        if (f[0] === "Aracnofobia") return mostrarPantallaAracnofobia();
+        seleccionarDefinicion(btn, f[0]);
+      };
+      dCol.appendChild(btn);
+      return {nombre: f[0], btn};
+    });
+
+    juegoIniciado = true;
+  } else {
+    if (seleccionFobia) seleccionFobia.btn.classList.add("selected");
+    if (seleccionDef) seleccionDef.btn.classList.add("selected");
+  }
+
+  actualizarErrores();
+}
+
+function actualizarErrores() {
+  document.getElementById("message").innerHTML = `Errores: <strong>${errores}/${maxErrores}</strong>`;
+}
+
+function mostrarPantallaAracnofobia() {
+  document.getElementById("juego").style.display = "none";
+  const pantalla = document.getElementById("pantalla-aracnofobia");
+  pantalla.style.display = "flex";
+  pantalla.style.opacity = 1;
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  const spiderImg = new Image();
+  spiderImg.src = 'img/miedo.png';
+
+  const textos = [
+    "¡Tengo miedo a las arañas!",
+    "¡QUE NO!",
+    "¡QUE TENGO MIEDOOO!",
+    "¡QUE TENGO MIEDOOO!",
+    "¡ME CAGOOOO!",
+    "¡AAAAAAAAAAAAAAAAAHHHH!"
+  ];
+
+  let indexTexto = 0;
+  let intensidad = 2;
+  let spiderX = 600, spiderY = 150;
+  let targetX = spiderX, targetY = spiderY;
+  let fadeTriggered = false;
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    targetX = e.clientX - rect.left - 100;
+    targetY = e.clientY - rect.top - 150;
+  });
+
+  function cambiarTexto() {
+    indexTexto++;
+    if(indexTexto >= textos.length) indexTexto = textos.length - 1;
+    intensidad += 2;
+    setTimeout(cambiarTexto, 4000);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    spiderX += (targetX - spiderX) * 0.05;
+    spiderY += (targetY - spiderY) * 0.05;
+
+    ctx.drawImage(spiderImg, spiderX, spiderY, 200, 300);
+
+    const dx = targetX - spiderX;
+    const dy = targetY - spiderY;
+    const distancia = Math.sqrt(dx * dx + dy * dy);
+
+    const minIntensidad = 2;
+    const maxIntensidad = 20;
+    const maxDistancia = 60;
+    const intensidadRaw = maxDistancia - distancia; 
+    const intensidadClamped = Math.max(0, Math.min(intensidadRaw, maxDistancia));
+    intensidad = minIntensidad + (intensidadClamped / maxDistancia) * (maxIntensidad - minIntensidad);
+
+    ctx.font = "28px 'Press Start 2P'";
+    ctx.fillStyle = "white";
+    const text = textos[indexTexto];
+    const textWidth = ctx.measureText(text).width;
+    let x = (canvas.width - textWidth) / 2;
+    let y = canvas.height / 4;
+
+    for (let i = 0; i < text.length; i++) {
+        const offsetX = (Math.random() * 2 - 1) * intensidad;
+        const offsetY = (Math.random() * 2 - 1) * intensidad;
+        ctx.fillText(text[i], x + offsetX, y + offsetY);
+        x += ctx.measureText(text[i]).width;
+    }
+
+    if (!fadeTriggered && text.includes("AAAAAAAHHHH")) {
+      fadeTriggered = true;
+      setTimeout(() => {
+        pantalla.style.transition = "opacity 2s";
+        pantalla.style.opacity = 0;
+      }, 4000);
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  spiderImg.onload = () => {
+    draw();
+    setTimeout(cambiarTexto, 4000);
+  }
+}
+
+function seleccionarFobia(btn, nombre) {
+  document.querySelectorAll(".fobia").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  seleccionFobia = {nombre, btn};
+  comprobarPar();
+}
+
+function seleccionarDefinicion(btn, nombre) {
+  document.querySelectorAll(".definicion").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  seleccionDef = {nombre, btn};
+  comprobarPar();
+}
+
+function comprobarPar() {
+  if (seleccionFobia && seleccionDef) {
+    if (seleccionFobia.nombre === seleccionDef.nombre) {
+      seleccionFobia.btn.classList.add("hidden");
+      seleccionDef.btn.classList.add("hidden");
+      paresRestantes--;
+      if (paresRestantes === 0) {
+        document.getElementById("message").innerHTML = "¡Has superado a todos los miedos!";
+      }
+    } else {
+      errores++;
+      if (errores >= maxErrores) {
+        const msg = document.getElementById("message");
+        msg.innerHTML = "<span class='gameover'>GAME <br> OVER</span>";
+        const btnRestart = document.createElement("button");
+        btnRestart.className = "restart";
+        btnRestart.textContent = "Reiniciar";
+        btnRestart.onclick = () => { juegoIniciado = false; iniciarJuego(); };
+        msg.appendChild(document.createElement("br"));
+        msg.appendChild(btnRestart);
+      } else {
+        actualizarErrores();
+      }
+    }
+    seleccionFobia = null;
+    seleccionDef = null;
+    document.querySelectorAll(".selected").forEach(b => b.classList.remove("selected"));
+  }
+}
+
+iniciarJuego();
+</script>
+
+</body>
+</html>

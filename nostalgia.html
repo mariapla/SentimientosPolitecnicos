@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Figtree", sans-serif;
+        margin: 0;
+        background: navy;
+        transition: background 0.5s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      body.ligera {
+        background: navy;
+      }
+      body.tormenta {
+        background: navy;
+      }
+      main {
+        box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
+        margin: 2rem;
+        padding: 2rem;
+        border-radius: 5px;
+        background-color: white;
+        max-width: 600px;
+      }
+      h1 {
+        margin-top: 0;
+        font-weight: 700;
+        font-size: 2.3rem;
+        margin-bottom: 0.8rem;
+        color: navy;
+      }
+      .definicion {
+        font-style: italic;
+        margin-top: 0;
+        margin-bottom: 0.8rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+      .sinonimos {
+        margin-top: 0;
+        font-size: 1rem;
+        color: navy;
+      }
+      .controles {
+        position: fixed;
+        top: 80vh;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1rem;
+        border-radius: 5px;
+        box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 12px;
+        z-index: 100;
+      }
+      .controles h3 {
+        margin: 0 0 0.8rem 0;
+        font-size: 0.9rem;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn-group {
+        display: flex;
+        gap: 0.5rem;
+      }
+      button {
+        padding: 0.6rem 1rem;
+        border: 2px solid navy;
+        background: white;
+        color: navy;
+        font-family: "Figtree", sans-serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      button:hover {
+        background: navy;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 8px;
+      }
+      button.active {
+        background: navy;
+        color: white;
+      }
+      .control-section {
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 1rem;
+      }
+      .control-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      .controles-musica {
+        position: fixed;
+        top: 80vh;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1rem;
+        border-radius: 5px;
+        box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 12px;
+        z-index: 100;
+      }
+      #btnMusica {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      .frase-container {
+        margin: 2rem;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 5px;
+        box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 12px;
+        max-width: 600px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .frase-nostalgia {
+        font-size: 1.2rem;
+        font-weight: 700;
+        font-style: italic;
+        color: #333;
+        line-height: 1.6;
+        margin: 0;
+        transition: opacity 0.3s ease;
+      }
+      .hint {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 1rem;
+        opacity: 0.7;
+      }
+      .volver {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        padding: 0.6rem 1rem;
+        border: 2px solid navy;
+        background: white;
+        color: navy;
+        font-family: "Figtree", sans-serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 100;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="lluvia"
+      style="position: fixed; top: 0; left: 0; z-index: -1"
+    ></canvas>
+    <button  class="volver">
+      <a href="index.html">Volver</a>
+    </button>
+</button>
+    <div class="controles">
+      <h3>Intensidad de lluvia</h3>
+      <div class="btn-group">
+        <button onclick="cambiarIntensidad('ligera')">Ligera</button>
+        <button onclick="cambiarIntensidad('normal')" class="active">
+          Normal
+        </button>
+        <button onclick="cambiarIntensidad('tormenta')">Tormenta</button>
+      </div>
+    </div>
+    <div class="controles-musica">
+      <div class="control-section">
+        <button id="btnMusica">
+          <span id="iconoMusica"
+            ><i class="fa-solid fa-volume-high" style="color: #000080"></i
+          ></span>
+        </button>
+      </div>
+    </div>
+    <main>
+      <h1>Nostalgia</h1>
+      <p class="definicion">
+        Tristeza melancólica originada por el recuerdo de una dicha perdida.
+      </p>
+      <p class="sinonimos">añoranza, melancolía, pena, saudade, ansión.</p>
+    </main>
+    <div class="frase-container">
+      <p class="frase-nostalgia" id="fraseNostalgia"></p>
+      <p class="hint">Haz clic aquí para cambiar la frase</p>
+    </div>
+
+    <script>
+      const c = document.getElementById("lluvia");
+      const ctx = c.getContext("2d");
+
+      function resize() {
+        const dpr = devicePixelRatio || 1;
+        c.width = innerWidth * dpr;
+        c.height = innerHeight * dpr;
+        c.style.width = innerWidth + "px";
+        c.style.height = innerHeight + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      addEventListener("resize", resize);
+      resize();
+
+      //intensidades
+      const intensidades = {
+        ligera: {
+          cantidad: 150,
+          speedMultiplier: 0.7,
+          alphaRange: [0.1, 0.25],
+          volumen: 0.3,
+          audio: "audio/lluvialigera.mp3",
+        },
+        normal: {
+          cantidad: 350,
+          speedMultiplier: 1,
+          alphaRange: [0.15, 0.35],
+          volumen: 0.35,
+          audio: "audio/lluvianormal.mp3",
+        },
+        tormenta: {
+          cantidad: 600,
+          speedMultiplier: 1.5,
+          alphaRange: [0.2, 0.5],
+          volumen: 0.4,
+          audio: "audio/lluviafuerte.mp3",
+        },
+      };
+      let intensidadActual = "normal";
+      let drops = [];
+
+      function crearGotas(intensidad) {
+        const config = intensidades[intensidad];
+        drops = Array.from({ length: config.cantidad }, () => ({
+          x: Math.random() * innerWidth,
+          y: Math.random() * innerHeight,
+          len: 10 + Math.random() * 20,
+          speed: (3 + Math.random() * 6) * config.speedMultiplier,
+          alpha:
+            config.alphaRange[0] +
+            Math.random() * (config.alphaRange[1] - config.alphaRange[0]),
+          width: Math.random() < 0.7 ? 1.8 : 1.5,
+        }));
+      }
+
+      crearGotas("normal");
+
+      function cambiarIntensidad(intensidad) {
+        intensidadActual = intensidad;
+        crearGotas(intensidad);
+
+        document
+          .querySelectorAll("button")
+          .forEach((btn) => btn.classList.remove("active"));
+        event.target.classList.add("active");
+
+        const config = intensidades[intensidad];
+        audio.src = config.audio;
+        audio.volume = config.volumen;
+        if (musicaReproduciendo) {
+          audio.play();
+        }
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+        // gotas
+        ctx.strokeStyle = "rgba(180,200,255,1)";
+        for (const d of drops) {
+          ctx.globalAlpha = d.alpha;
+          ctx.lineWidth = d.width;
+          ctx.beginPath();
+          ctx.moveTo(d.x, d.y);
+          ctx.lineTo(d.x, d.y + d.len);
+          ctx.stroke();
+
+          d.y += d.speed;
+
+          if (d.y > innerHeight) {
+            d.y = -d.len;
+            d.x = Math.random() * innerWidth;
+          }
+        }
+
+        requestAnimationFrame(frame);
+      }
+      frame();
+
+      // Audio de lluvia
+      const audio = new Audio("audio/normal.mp3");
+      audio.loop = true;
+      audio.volume = 0.3;
+      let musicaReproduciendo = false;
+
+      function toggleMusica() {
+        const icono = document.getElementById("iconoMusica");
+        const texto = document.getElementById("textoMusica");
+        const btn = document.getElementById("btnMusica");
+
+        if (musicaReproduciendo) {
+          audio.pause();
+          icono.innerHTML =
+            '<i class="fa-solid fa-volume-high" style="color: #000080;"></i>';
+          btn.classList.remove("active");
+        } else {
+          audio.play();
+          icono.innerHTML =
+            '<i class="fa-solid fa-volume-xmark" style="color: #fff;"></i>';
+          btn.classList.add("active");
+        }
+        musicaReproduciendo = !musicaReproduciendo;
+      }
+      document
+        .getElementById("btnMusica")
+        .addEventListener("click", toggleMusica);
+
+      // Frases nostálgicas
+      const frases = [
+        "Hay perfumes que me devuelven a lugares que ya no existen.",
+        "La nostalgia es un archivo que elimina las asperezas de los viejos tiempos.",
+        "El pasado siempre parece más luminoso en la memoria.",
+        "Se vuelve más fácil, a medida que te vuelves más viejo, caer en la nostalgia.",
+        "La nostalgia es la enfermedad de aquellas personas que no se dan cuenta de que hoy es la nostalgia del mañana.",
+        "¿Por qué el pasado nos resulta tan encantador a todos? ",
+        " En el ocaso de la disolución, todo se encuentra iluminado por el aura de la nostalgia.",
+        "Uno siempre se siente como en casa en su memoria.",
+        " La nostalgia es el intento de darle raíces al tiempo.",
+        "Los recuerdos son la única forma de viajar al pasado.",
+      ];
+
+      function cambiarFrase() {
+        const fraseElement = document.getElementById("fraseNostalgia");
+        const fraseAleatoria =
+          frases[Math.floor(Math.random() * frases.length)];
+        fraseElement.style.opacity = "0";
+        setTimeout(() => {
+          fraseElement.textContent = fraseAleatoria;
+          fraseElement.style.opacity = "1";
+        }, 300);
+      }
+
+      cambiarFrase();
+      document
+        .querySelector(".frase-container")
+        .addEventListener("click", cambiarFrase);
+    </script>
+    <script
+      src="https://kit.fontawesome.com/b8f8edcb52.js"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

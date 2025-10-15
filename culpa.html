@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuentra al Culpable</title>
+<style>
+  body {
+    background: radial-gradient(circle at center, #111 0%, #000 100%);
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    overflow: hidden;
+    height: 100vh;
+    margin: 0;
+  }
+
+  #gameArea {
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #uiPanel {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 20vh;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  h1 {
+    font-size: clamp(1.2em, 2vw, 1.8em);
+    letter-spacing: 2px;
+    margin: 5px 0 10px;
+    font-weight: 300;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 5px;
+  }
+
+  button {
+    padding: 8px 20px;
+    border: none;
+    background: crimson;
+    color: white;
+    font-size: clamp(0.9em, 1.5vw, 1em);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  button:hover:enabled {
+    background: #ff4455;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  #result {
+    font-size: clamp(0.8em, 1.5vw, 1em);
+    margin-top: 8px;
+  }
+
+  .letter {
+    position: absolute;
+    font-size: clamp(2em, 5vw, 3em);
+    cursor: pointer;
+    transition: all 0.8s ease;
+    user-select: none;
+    opacity: 1;
+    font-weight: 750;
+  }
+
+  .center {
+    font-size: clamp(2.5em, 6vw, 3.5em);
+    color: gray;
+  }
+
+  .victima-container {
+    position: absolute;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+  }
+
+  .icon {
+    display: block;
+    width: 40px;
+    height: 40px;
+    margin-top: 15px;
+    z-index: 3;
+  }
+
+  @keyframes floatLoop {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.03); }
+  }
+
+  .floating {
+    animation: floatLoop 2s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+  <div id="gameArea"></div>
+
+  <div id="uiPanel">
+    <h1>Encuentra al culpable</h1>
+    <div class="btn-group">
+      <button id="startBtn">Comenzar</button>
+      <button id="backBtn" onclick="window.location.href='index.html'">Volver</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+<script>
+const letras = ["C", "U", "L", "P", "A"];
+
+const armas = [
+  { nombre: "Cuchillo", heridaSVG: "❤️‍🩹", armaSVG: "🔪" },
+  { nombre: "Pistola", heridaSVG: "💥", armaSVG: "🔫" },
+  { nombre: "Veneno", heridaSVG: "🤢", armaSVG: "☠️" },
+  { nombre: "Martillo", heridaSVG: "🤕", armaSVG: "🔨" }
+];
+
+const gameArea = document.getElementById("gameArea");
+const resultDiv = document.getElementById("result");
+const startBtn = document.getElementById("startBtn");
+
+let asesino = null;
+let victima = null;
+let sospechosos = [];
+let heridaSVG = "";
+let juegoTerminado = false;
+let bloqueado = false;
+
+window.addEventListener("load", mostrarPalabraInicial);
+window.addEventListener("resize", ajustarPosicionesResponsive);
+startBtn.addEventListener("click", manejarBoton);
+
+function manejarBoton() {
+  if (bloqueado) return;
+  if (juegoTerminado) {
+    reiniciarJuego();
+  } else {
+    iniciarJuego();
+  }
+}
+
+function mostrarPalabraInicial() {
+  gameArea.innerHTML = "";
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2 - 100;
+  const spacing = Math.min(60, window.innerWidth / 12);
+
+  letras.forEach((letra, i) => {
+    const el = document.createElement("div");
+    el.classList.add("letter", "floating");
+    el.style.left = `${centerX - (letras.length / 2) * spacing + i * spacing}px`;
+    el.style.top = `${centerY}px`;
+    el.style.animationDelay = `${i * 0.2}s`;
+    el.textContent = letra;
+    gameArea.appendChild(el);
+  });
+}
+
+function ajustarPosicionesResponsive() {
+  if (!victima || juegoTerminado) return;
+  iniciarJuego();
+}
+
+function iniciarJuego() {
+  bloqueado = true;
+  startBtn.disabled = true;
+  resultDiv.textContent = "";
+
+  victima = letras[Math.floor(Math.random() * letras.length)];
+  const letrasRestantes = letras.filter(l => l !== victima);
+
+  let armasDisponibles = [...armas];
+  armasDisponibles.sort(() => Math.random() - 0.5);
+
+  moverLetrasAJuego(victima, letrasRestantes, armasDisponibles);
+}
+
+function moverLetrasAJuego(victima, restantes, armasDisponibles) {
+  const letrasDOM = document.querySelectorAll(".letter");
+  letrasDOM.forEach(l => l.classList.remove("floating"));
+
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2 - 120;
+  const radius = Math.min(140, window.innerWidth / 6);
+
+  letrasDOM.forEach(el => {
+    const letra = el.textContent;
+    if (letra === victima) {
+      el.classList.add("center");
+      el.style.left = `${centerX}px`;
+      el.style.top = `${centerY}px`;
+      el.style.transform = "translate(-50%, -50%) scale(1.1)";
+    } else {
+      const index = restantes.indexOf(letra);
+      const angle = (2 * Math.PI / restantes.length) * index;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.transform = "translate(-50%, -50%)";
+    }
+  });
+
+  setTimeout(() => configurarJuego(victima, restantes, armasDisponibles), 400);
+}
+
+function configurarJuego(victima, restantes, armasDisponibles) {
+  const letrasDOM = document.querySelectorAll(".letter");
+  const victimEl = [...letrasDOM].find(el => el.textContent === victima);
+
+  const victimaContainer = document.createElement("div");
+  victimaContainer.classList.add("victima-container");
+  victimaContainer.style.left = victimEl.style.left;
+  victimaContainer.style.top = victimEl.style.top;
+
+  victimEl.remove();
+
+  const victimLetter = document.createElement("div");
+  victimLetter.textContent = victima;
+  victimLetter.classList.add("letter", "center");
+
+  const heridaEl = document.createElement("div");
+  heridaEl.classList.add("icon");
+
+  victimaContainer.appendChild(victimLetter);
+  victimaContainer.appendChild(heridaEl);
+  gameArea.appendChild(victimaContainer);
+
+  sospechosos = [];
+  restantes.forEach((letra, i) => {
+    const el = [...letrasDOM].find(e => e.textContent === letra);
+    const arma = armasDisponibles[i % armasDisponibles.length];
+    el.innerHTML = `${letra}<div class="icon">${arma.armaSVG}</div>`;
+    el.addEventListener("click", () => adivinar(letra, arma));
+    sospechosos.push({ letra, arma, el });
+  });
+
+  const asesinoIndex = Math.floor(Math.random() * sospechosos.length);
+  asesino = sospechosos[asesinoIndex];
+  heridaSVG = asesino.arma.heridaSVG;
+  heridaEl.textContent = heridaSVG;
+
+  bloqueado = false;
+}
+
+function adivinar(letra, arma) {
+  if (!asesino || juegoTerminado) return;
+
+  if (letra === asesino.letra) {
+    resultDiv.innerHTML = `✅ ¡Correcto! ${letra} era el asesino con un ${arma.nombre} ${arma.armaSVG}.`;
+  } else {
+    resultDiv.innerHTML = `❌ ${letra} tenía un ${arma.nombre} ${arma.armaSVG}, pero no fue el asesino.`;
+  }
+
+  terminarJuego();
+}
+
+function terminarJuego() {
+  juegoTerminado = true;
+  startBtn.textContent = "Reiniciar";
+  startBtn.disabled = false;
+}
+
+function reiniciarJuego() {
+  juegoTerminado = false;
+  asesino = null;
+  victima = null;
+  sospechosos = [];
+  heridaSVG = "";
+  resultDiv.textContent = "";
+  startBtn.textContent = "Comenzar";
+  mostrarPalabraInicial();
+}
+</script>
+</body>
+</html>

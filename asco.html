@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>ASCO</title>
+<link rel="shortcut icon" href="img/face-dizzy-regular.svg" type="image/x-icon">
+<style>
+html, body {
+  margin: 0; padding: 0; height: 100%; background: #000; color: #fff; font-family: Arial, Helvetica, sans-serif; overflow: hidden;
+}
+video {
+  width: 100vw; height: 100vh; object-fit: cover; display: none; transition: opacity 1s;
+}
+.pantalla {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; z-index: 2000; transition: opacity 0.5s;
+}
+.oculta { opacity: 0; pointer-events: none; }
+.pantalla h1 { font-size: 4rem; margin: 0 0 20px; }
+.pantalla .sub { font-size: 1.2rem; margin-bottom: 20px; opacity: 0.9; }
+button.big { font-size: 1.6rem; padding: 14px 28px; border-radius: 10px; border: 0; background: #fff; color: #000; cursor: pointer; }
+button.big:hover { transform: scale(1.03); }
+#contador { font-size: 100vh; font-weight: 600; color: #fff; }
+#banner-contenedor { position: fixed; top: 18px; left: 0; width: 100vw; overflow: hidden; pointer-events: none; z-index: 50; }
+#banner-texto { display: inline-block; white-space: nowrap; font-family: Arial, Helvetica, sans-serif; font-size: 3rem; font-weight: 700; color: black; text-shadow: 1px 1px 3px rgba(0,0,0,0.7); transform: translateX(100%); animation-name: scrollBanner; animation-fill-mode: forwards; animation-play-state: paused; }
+@keyframes scrollBanner { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+#pantalla-verde { position: fixed; top:0; left:0; width:100vw; height:100vh; display:flex; justify-content:center; align-items:center; background:#1b8a1b; opacity:0; transition:opacity 1s; z-index:40; }
+#resultados { position:absolute; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:45; }
+.tweet { position:absolute; background:#FFEB3B; color:#000; font-family:'Comic Sans MS', cursive, sans-serif; padding:12px 10px; border-radius:8px; max-width:200px; box-shadow:4px 4px 10px rgba(0,0,0,0.4); transform: rotate(-5deg); transition: transform 1s ease, opacity 1s ease, filter 1s ease; text-align:left; }
+.tweet.explota { transform: scale(2) rotate(720deg); filter: blur(5px); opacity:0; transition: transform 1.5s ease-out, opacity 1.5s ease-out, filter 1.5s ease-out; }
+#volver-btn { position: fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:150px; height:150px; border-radius:50%; background-image:url('img/power-push-button.png'); background-size:cover; background-position:center; border:0; cursor:pointer; box-shadow:0 0 20px #fff; z-index:200; display:none; }
+.mosca { position:absolute; width:48px; height:48px; pointer-events:none; z-index:210; transition: transform 1s linear; }
+#flash { position:fixed; top:0; left:0; width:100vw; height:100vh; background:#fff; opacity:0; pointer-events:none; z-index:9999; transition:opacity 0.15s; }
+#gameOverScreen { position:fixed; top:0; left:0; width:100vw; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:5000; }
+#gameOverScreen .msg { font-size:5rem; margin-bottom:10px; text-align:center; color:white; }
+#gameOverScreen .sub { font-size:3rem; margin-bottom:40px; text-align:center; color:white; }
+#cycleDisplay { position:relative; font-size:1.1rem; opacity:0.9; }
+</style>
+</head>
+<body>
+
+<div id="inicio" class="pantalla">
+  <h1>READY TO PLAY?</h1>
+  <div id="cycleDisplay" class="sub">CYCLE 1</div>
+  <button id="startBtn" class="big">START</button>
+  <div class="sub" style="margin-top:18px;font-size:.95rem;opacity:.8">Presiona para desbloquear audio y empezar</div>
+</div>
+
+<div id="contadorScreen" class="pantalla oculta"><div id="contador">3</div></div>
+
+<video id="miVideo" playsinline preload="auto">
+  <source src="video/video.mov" type="video/mp4">
+</video>
+
+<div id="banner-contenedor"><div id="banner-texto">La rubia tarada, bronceada, aburrida... Asco me da tu sociedad</div></div>
+
+<div id="pantalla-verde"><div id="resultados"></div></div>
+
+<button id="volver-btn" aria-label="Explota los posits"></button>
+
+<div id="gameOverScreen" class="pantalla oculta">
+  <div class="msg"></div>
+  <div id="gameOverActions"></div>
+</div>
+
+<div id="flash"></div>
+
+<audio id="moscasAudio" src="audio/moscas.mp3" preload="auto" loop></audio>
+<audio id="explosionSound" src="audio/explosion.mp3" preload="auto"></audio>
+<audio id="countdownSound" src="audio/timer_countdown-345137.mp3" preload="auto"></audio>
+
+<script>
+const inicio = document.getElementById('inicio'),
+      cycleDisplay = document.getElementById('cycleDisplay'),
+      contadorScreen = document.getElementById('contadorScreen'),
+      contador = document.getElementById('contador'),
+      startBtn = document.getElementById('startBtn'),
+      miVideo = document.getElementById('miVideo'),
+      bannerTexto = document.getElementById('banner-texto'),
+      pantallaVerde = document.getElementById('pantalla-verde'),
+      resultados = document.getElementById('resultados'),
+      volverBtn = document.getElementById('volver-btn'),
+      gameOverScreen = document.getElementById('gameOverScreen'),
+      gameOverActions = document.getElementById('gameOverActions'),
+      flash = document.getElementById('flash'),
+      moscasAudio = document.getElementById('moscasAudio'),
+      explosionSound = document.getElementById('explosionSound'),
+      countdownSound = document.getElementById('countdownSound');
+
+let audioHabilitado=false, tweetsActivos=false, tweetTimer=null, tweetInterval=1500, ciclo=1,
+    MAX_CICLOS=3,
+    buttonTexts=["TRY IT AGAIN?","YOU WANT MORE?","SURE?"],
+    moscasVisuales=[],
+    tweetPool=[
+      "¡Esto es un tweet de prueba! #asco #trump",
+      "Otro tweet interesante #asco #trump",
+      "Un tercer tweet flotante #asco #trump",
+      "Más información interesante #asco #trump",
+      "LOL, no puedo creerlo 😂",
+      "Esto es increíble... o no"
+    ],
+    sonidosActivos=[];
+
+const velocidadBase = 4;
+const sonidosTweets = ['audio/sonido1.mp3','audio/sonido2.mp3','audio/sonido3.mp3'];
+
+function fadeInAudio(audioEl, target=0.6, duration=800){ try{ audioEl.volume=0; const step=50, inc=target/(duration/step); audioEl.play().catch(()=>{}); const iv=setInterval(()=>{ audioEl.volume=Math.min(target,audioEl.volume+inc); if(audioEl.volume>=target) clearInterval(iv); }, step); }catch(e){} }
+function fadeOutAndStop(audioEl,duration=400){ try{ const step=50, dec=audioEl.volume/(duration/step||1); const iv=setInterval(()=>{ audioEl.volume=Math.max(0,audioEl.volume-dec); if(audioEl.volume<=0){ clearInterval(iv); try{audioEl.pause(); audioEl.currentTime=0; audioEl.volume=1;}catch(e){} } }, step); }catch(e){} }
+function enableAudioOnFirstInteract(){ if(audioHabilitado) return; audioHabilitado=true; try{ moscasAudio.play().then(()=>{ moscasAudio.pause(); moscasAudio.currentTime=0; }).catch(()=>{}); }catch(e){} try{ explosionSound.play().then(()=>{ explosionSound.pause(); explosionSound.currentTime=0; }).catch(()=>{}); }catch(e){} }
+
+document.body.addEventListener('click', enableAudioOnFirstInteract,{once:true});
+document.body.addEventListener('touchstart', enableAudioOnFirstInteract,{once:true});
+
+function corruptText(base,intensity=1){ const symbols=['�','@','#','%','¤','¿','¡','¥','€','※','★','♡','¬','╳','…','�']; const emojis=['🤢','🤮','😒','🙄','💀','🐛','🪲','🦠']; let arr=base.split(''); const ops=Math.max(1,Math.floor(intensity*3)); for(let i=0;i<ops;i++){ const idx=Math.floor(Math.random()*arr.length); const opType=Math.random(); if(opType<0.3) arr[idx]=symbols[Math.floor(Math.random()*symbols.length)]; else if(opType<0.55){ const j=Math.floor(Math.random()*arr.length); [arr[idx],arr[j]]=[arr[j],arr[idx]]; } else if(opType<0.8) arr.splice(idx,0,emojis[Math.floor(Math.random()*emojis.length)]); else arr[idx]=arr[idx]===arr[idx].toUpperCase()?arr[idx].toLowerCase():arr[idx].toUpperCase(); } if(Math.random()<0.4*intensity) arr.push(' '+symbols[Math.floor(Math.random()*symbols.length)]); return arr.join(''); }
+
+function updateBannerForCycle(){ const base="La rubia tarada, bronceada, aburrida... Asco me da tu sociedad"; const intensity=Math.min(4,1+(ciclo-1)*0.8); bannerTexto.textContent=corruptText(base,intensity); }
+
+function setupBannerSync(){ bannerTexto.style.animation='none'; void bannerTexto.offsetWidth; const dur=miVideo.duration/miVideo.playbackRate; bannerTexto.style.animation=`scrollBanner ${dur}s linear forwards`; bannerTexto.style.animationPlayState='running'; }
+
+function spawnMoscasVisual(count=12){ clearMoscasVisual(); for(let i=0;i<count;i++){ const img=document.createElement('img'); img.src='img/mosca-fly-2.png'; img.className='mosca'; const x=Math.random()*window.innerWidth; const y=Math.random()*window.innerHeight; img.style.transform=`translate(${x}px,${y}px)`; img.style.opacity=1; document.body.appendChild(img); moscasVisuales.push(img); (function loopFly(el){ if(!moscasVisuales.includes(el)) return; const nx=Math.random()*window.innerWidth; const ny=Math.random()*window.innerHeight; const dur=600+Math.random()*900; el.style.transition=`transform ${dur}ms linear`; el.style.transform=`translate(${nx}px,${ny}px)`; setTimeout(()=>loopFly(el),dur); })(img); } }
+function clearMoscasVisual(){ moscasVisuales.forEach(m=>{ m.style.opacity=0; setTimeout(()=>m.remove(),800); }); moscasVisuales=[]; }
+
+function mostrarTweetsDemo(){ tweetsActivos=true; resultados.innerHTML=''; tweetInterval=1500; let index=0; let tweetsMostrados=0; function spawnTweet(){ if(!tweetsActivos) return; if(index>=tweetPool.length) index=0; const div=document.createElement('div'); div.className='tweet'; div.innerText=tweetPool[index]; div.style.left=`${Math.random()*(window.innerWidth-220)}px`; div.style.top=`${Math.random()*(window.innerHeight-120)}px`; div.style.transform=`rotate(${(Math.random()*20-10).toFixed(1)}deg)`; div.style.opacity=0; resultados.appendChild(div); setTimeout(()=>div.style.opacity=1,50); if(audioHabilitado){ const sa=new Audio(sonidosTweets[Math.floor(Math.random()*sonidosTweets.length)]); sa.volume=0.35+Math.random()*0.25; sa.play().catch(()=>{}); sonidosActivos.push(sa); } index++; tweetsMostrados++; if(tweetsMostrados===8){ setTimeout(()=>{ volverBtn.style.display='block'; spawnMoscasVisual(12); },300); } tweetInterval=Math.max(280,tweetInterval*0.92); tweetTimer=setTimeout(spawnTweet,tweetInterval); } spawnTweet(); }
+
+function stopTweetSoundsAndMoscas(){ tweetsActivos=false; clearTimeout(tweetTimer); sonidosActivos.forEach(a=>{ const step=50,dur=300,dec=a.volume/(dur/step||1); const iv=setInterval(()=>{ a.volume=Math.max(0,a.volume-dec); if(a.volume<=0){ clearInterval(iv); try{a.pause();a.currentTime=0;}catch(e){} } }, step); }); sonidosActivos.length=0; clearMoscasVisual(); fadeOutAndStop(moscasAudio,300); }
+
+function activarExplosion(){ tweetsActivos=false; clearTimeout(tweetTimer); const all=document.querySelectorAll('.tweet'); all.forEach(t=>{ const offsetX=(Math.random()-0.5)*window.innerWidth*1.5; const offsetY=(Math.random()-0.5)*window.innerHeight*1.5; const rot=Math.random()*720; const scale=1.5+Math.random()*1.5; t.style.transform=`translate(${offsetX}px,${offsetY}px) rotate(${rot}deg) scale(${scale})`; t.style.opacity='0'; t.style.filter='blur(5px)'; t.style.transition='transform 1.5s ease-out, opacity 1.5s ease-out, filter 1.5s ease-out'; }); stopTweetSoundsAndMoscas(); if(audioHabilitado){ explosionSound.volume=1; explosionSound.currentTime=0; explosionSound.play().catch(()=>{}); } flash.style.opacity=1; setTimeout(()=>flash.style.opacity=0,140); volverBtn.style.display='none'; setTimeout(()=>{ pantallaVerde.style.opacity=0; setTimeout(()=>{ pantallaVerde.style.display='none'; showGameOverForCycle(); },900); },700); }
+
+function showGameOverForCycle(){
+  gameOverActions.innerHTML='';
+  gameOverScreen.classList.remove('oculta');
+  if(ciclo>=MAX_CICLOS){
+    const gameOverMsg=document.createElement('div'); gameOverMsg.className='msg'; gameOverMsg.textContent='GAME OVER'; gameOverMsg.style.textAlign='center'; gameOverMsg.style.marginBottom='20px'; gameOverActions.appendChild(gameOverMsg);
+    const note=document.createElement('div'); note.className='sub'; note.textContent='THE LOOP BREAKS. NO MORE'; note.style.textAlign='center'; note.style.fontSize='3rem'; note.style.marginBottom='20px'; gameOverActions.appendChild(note);
+
+    const countdownDiv=document.createElement('div'); countdownDiv.id='countdownFinal'; countdownDiv.style.fontSize='2rem'; countdownDiv.style.marginBottom='40px'; countdownDiv.style.textAlign='center'; gameOverActions.appendChild(countdownDiv);
+    function updateCountdown(){ const now=new Date(); const target=new Date('2028-11-07T00:00:00'); const diff=target-now; if(diff<=0){ countdownDiv.textContent="THE TIME HAS COME."; clearInterval(countInterval); return; } const days=Math.floor(diff/(1000*60*60*24)); const hours=Math.floor((diff/(1000*60*60))%24); const mins=Math.floor((diff/(1000*60))%60); const secs=Math.floor((diff/1000)%60); countdownDiv.textContent=`${days}d ${hours}h ${mins}m ${secs}s`; }
+    updateCountdown();
+    const countInterval=setInterval(updateCountdown,1000);
+
+    const buttonsContainer=document.createElement('div'); buttonsContainer.style.display='flex'; buttonsContainer.style.gap='20px'; buttonsContainer.style.marginTop='10px';
+    const restartBtn=document.createElement('button'); restartBtn.className='big'; restartBtn.textContent='REINICIAR'; restartBtn.onclick=()=>{ ciclo=1; updateCycleDisplay(); gameOverScreen.classList.add('oculta'); inicio.classList.remove('oculta'); };
+    const indexBtn=document.createElement('button'); indexBtn.className='big'; indexBtn.textContent='INDEX'; indexBtn.onclick=()=>window.location.href='index.html';
+    buttonsContainer.appendChild(restartBtn); buttonsContainer.appendChild(indexBtn); gameOverActions.appendChild(buttonsContainer);
+  } else{
+    const vidasRestantes=MAX_CICLOS-ciclo;
+    const vidasDiv=document.createElement('div'); vidasDiv.className='sub'; vidasDiv.textContent=`Vidas restantes: ${vidasRestantes}`; vidasDiv.style.textAlign='center'; vidasDiv.style.fontSize='2rem'; vidasDiv.style.marginBottom='20px'; gameOverActions.appendChild(vidasDiv);
+    const btn=document.createElement('button'); btn.className='big'; btn.textContent="CONTINUAR"; btn.onclick=()=>{ ciclo++; updateCycleDisplay(); gameOverScreen.classList.add('oculta'); setTimeout(()=>{ inicio.classList.remove('oculta'); },350); };
+    gameOverActions.appendChild(btn);
+  }
+  gameOverActions.style.display='flex'; gameOverActions.style.flexDirection='column'; gameOverActions.style.justifyContent='center'; gameOverActions.style.alignItems='center'; gameOverActions.style.height='auto';
+}
+
+function updateCycleDisplay(){ cycleDisplay.textContent=`CYCLE ${ciclo}`; updateBannerForCycle(); }
+
+startBtn.addEventListener('click',()=>{
+  enableAudioOnFirstInteract();
+  inicio.classList.add('oculta'); contadorScreen.classList.remove('oculta');
+  let num=3; contador.textContent=num;
+  if(audioHabilitado){ countdownSound.currentTime=0; countdownSound.volume=0.85; countdownSound.play().catch(()=>{}); }
+  const iv=setInterval(()=>{ num--; if(num<=0){ clearInterval(iv); countdownSound.pause(); countdownSound.currentTime=0; contadorScreen.classList.add('oculta'); startVideoSequence(); } else{ contador.textContent=num; } },1000);
+});
+
+function startVideoSequence(){
+  const factor=velocidadBase*Math.pow(2,ciclo-1); // velocidad escalable por ciclo
+  miVideo.playbackRate=factor;
+  updateBannerForCycle();
+  miVideo.style.display='block'; miVideo.style.opacity=1;
+  if(miVideo.readyState>=1){ setupBannerSync(); }
+  else{ miVideo.addEventListener('loadedmetadata',function onMeta(){ miVideo.removeEventListener('loadedmetadata',onMeta); setupBannerSync(); miVideo.playbackRate=factor; }); }
+  if(audioHabilitado){ moscasAudio.loop=true; moscasAudio.currentTime=0; fadeInAudio(moscasAudio,0.45,900); }
+  miVideo.currentTime=0; miVideo.play().catch(()=>{});
+}
+
+miVideo.addEventListener('ended',()=>{
+  fadeOutAndStop(moscasAudio,150);
+  miVideo.style.transition='opacity 0.6s ease'; miVideo.style.opacity=0;
+  spawnMoscasVisual(12);
+  setTimeout(()=>{
+    miVideo.style.display='none';
+    pantallaVerde.style.display='flex';
+    pantallaVerde.style.transition='opacity 0.6s ease';
+    pantallaVerde.style.opacity=1;
+    mostrarTweetsDemo();
+  },600);
+});
+
+volverBtn.addEventListener('click',activarExplosion);
+volverBtn.addEventListener('touchstart',(e)=>{ e.preventDefault(); activarExplosion(); },{passive:false});
+
+updateCycleDisplay();
+window.addEventListener('resize',()=>{ if(volverBtn.style.display!=='none' && moscasVisuales.length) spawnMoscasVisual(moscasVisuales.length); });
+
+</script>
+</body>
+</html>

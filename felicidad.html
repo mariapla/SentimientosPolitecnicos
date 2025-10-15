@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Felicidad</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kurale&family=Open+Sans&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      /* font-family: "Open Sans", sans-serif; */
+      font-family: "Kurale", serif;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    .back-button {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 16px;
+      background-color: rgba(255, 255, 255, 0.6);
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      text-decoration: none;
+      color: #333;
+      cursor: pointer;
+      z-index: 1000;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .sliders {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slider {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      animation: slideanim 60s infinite;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    .slider__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      animation: zoom 60s infinite;
+      position: relative;
+    }
+
+    .slider__item {
+      max-width: 45%;
+      position: absolute;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .slider__item h5 {
+      font-family: "Kurale", serif;
+      font-size: 81px;
+      line-height: 76px;
+      letter-spacing: 4px;
+      margin-top: 10px;
+      margin-bottom: 30px;
+      text-shadow: 4px 3px #604a4a;
+    }
+
+    .slider__item p {
+      font-size: 32px;
+      line-height: 48px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      margin-bottom: 26px;
+      text-shadow: 2px 2px #2b2727;
+      color: #00f9aa;
+    }
+
+    @keyframes slideanim {
+      0% {
+        opacity: 0;
+      }
+
+      5% {
+        opacity: 1;
+      }
+
+      20% {
+        opacity: 1;
+      }
+
+      25% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes zoom {
+      50% {
+        transform: scale(1.3);
+      }
+    }
+
+    /* Задержка появления каждого слайда */
+    .slider:nth-child(1),
+    .slider:nth-child(1) .slider__img {
+      animation-delay: 0s;
+    }
+
+    .slider:nth-child(2),
+    .slider:nth-child(2) .slider__img {
+      animation-delay: 5s;
+    }
+
+    .slider:nth-child(3),
+    .slider:nth-child(3) .slider__img {
+      animation-delay: 10s;
+    }
+
+    .slider:nth-child(4),
+    .slider:nth-child(4) .slider__img {
+      animation-delay: 15s;
+    }
+
+    .slider:nth-child(5),
+    .slider:nth-child(5) .slider__img {
+      animation-delay: 20s;
+    }
+
+    .slider:nth-child(6),
+    .slider:nth-child(6) .slider__img {
+      animation-delay: 25s;
+    }
+
+    .slider:nth-child(7),
+    .slider:nth-child(7) .slider__img {
+      animation-delay: 30s;
+    }
+
+    .slider:nth-child(8),
+    .slider:nth-child(8) .slider__img {
+      animation-delay: 35s;
+    }
+
+    .slider:nth-child(9),
+    .slider:nth-child(9) .slider__img {
+      animation-delay: 40s;
+    }
+
+    .slider:nth-child(10),
+    .slider:nth-child(10) .slider__img {
+      animation-delay: 45s;
+    }
+
+    .slider:nth-child(11),
+    .slider:nth-child(11) .slider__img {
+      animation-delay: 50s;
+    }
+
+    .slider:nth-child(12),
+    .slider:nth-child(12) .slider__img {
+      animation-delay: 55s;
+    }
+
+    .heart {
+      position: absolute;
+      width: 54px;
+      height: 54px;
+      background-image: url('img/heart.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      animation: floatUp 2s ease-out forwards;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-100px) scale(1.5);
+      }
+    }
+
+    .pareja-fixed {
+      position: fixed;
+      top: 45px;
+      right: 55px;
+      width: 110px;
+      cursor: pointer;
+      z-index: 1001;
+      animation: mirrorFlip 4s infinite alternate;
+    }
+
+    @keyframes mirrorFlip {
+      0% {
+        transform: scaleX(1);
+      }
+
+      100% {
+        transform: scaleX(-1);
+      }
+    }
+
+    /* Пелена — белая полупрозрачная пелена поверх слайда */
+    .white-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+      opacity: 0;
+      animation-name: overlayFade;
+      animation-fill-mode: forwards;
+      animation-timing-function: ease;
+      z-index: 1;
+      animation-duration: 60s;
+      animation-iteration-count: infinite;
+    }
+
+    @keyframes overlayFade {
+      0% {
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 0.35;
+      }
+
+      80% {
+        opacity: 0.35;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .top-left {
+      top: 40px;
+      left: 40px;
+    }
+
+    .top-right {
+      top: 190px;
+      right: 40px;
+    }
+
+    .top-center {
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .bottom-left {
+      bottom: 90px;
+      left: 40px;
+    }
+
+    .bottom-right {
+      bottom: 90px;
+      right: 40px;
+    }
+
+    .center-center {
+      top: 65%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sliders">
+    <!-- #1 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-1.jpg" alt="" />
+      <div class="slider__item top-left">
+        <h5>Felicidad</h5>
+        <p>Felicidad no siempre es algo grande. <br> A veces, es tan simple como sentir el viento y escuchar el mar.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #2 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-2.jpg" alt="" />
+      <div class="slider__item bottom-left">
+        <h5>Tranquilidad</h5>
+        <p>A veces, no hacer nada es todo lo que se necesita para ser feliz.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #3 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-3.jpg" alt="" />
+      <div class="slider__item top-center">
+        <h5>Calma</h5>
+        <p>La felicidad también está en la calma, el silencio y el descanso</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #4 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-4.jpg" alt="" />
+      <div class="slider__item bottom-right">
+        <h5>Amistad</h5>
+        <p>Conectar con los demás es parte esencial de una vida feliz.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #5 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-5.jpg" alt="" />
+      <div class="slider__item bottom-left">
+        <h5>Pequeños momentos</h5>
+        <!-- <p>La felicidad nace en los pequeños momentos de la vida cotidiana.</p> -->
+        <p>Los momentos de diversión construyen recuerdos felices.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #6 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-6.jpg" alt="" />
+      <div class="slider__item top-left">
+        <h5>Risas</h5>
+        <p>Reír y jugar juntos es la esencia de la felicidad.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #7 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-7.jpg" alt="" />
+      <div class="slider__item bottom-left">
+        <h5>Camino juntos</h5>
+        <p>Caminar juntos, paso a paso, construye una felicidad compartida.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #8 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-8.jpg" alt="" />
+      <div class="slider__item center-center">
+        <h5>Amor</h5>
+        <p>La felicidad florece cuando el amor es sincero y recíproco.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #9 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-9.webp" alt="" />
+      <div class="slider__item top-left">
+        <h5>Apoyo</h5>
+        <p>La felicidad se construye paso a paso, de la mano con quien confías.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #10 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-10.webp" alt="" />
+      <div class="slider__item bottom-left">
+        <h5>Juntos para siempre</h5>
+        <p>La verdadera felicidad es envejecer juntos, tomados de la mano.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #11 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-11.jpg" alt="" />
+      <div class="slider__item bottom-right">
+        <h5>Alegría pura</h5>
+        <p>A veces, lo más puro de la felicidad lo vemos en ellos.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+    <!-- #12 -->
+    <div class="slider">
+      <img class="slider__img" src="img/felicidad-12.jpg" alt="" />
+      <div class="slider__item center-center">
+        <h5>Familia</h5>
+        <p>La familia es donde nace la felicidad. <br> Es el lugar donde siempre somos nosotros mismos.</p>
+      </div>
+      <div class="white-overlay"></div>
+    </div>
+
+
+    <a href="index.html" class="back-button">Volver</a>
+  </div>
+
+  <!-- Иконка-пускатель музыки -->
+  <img src="img/pareja.svg" alt="pareja" class="pareja-fixed" />
+
+  <!-- Аудио -->
+  <audio id="bg-music" src="audio/muzyka-schast-ya-dry-schaste-est-com.mp3" loop></audio>
+
+  <script>
+    // Сердечки
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      const x = Math.random() * (window.innerWidth - 30);
+      const y = window.innerHeight - 100;
+      heart.style.left = `${x}px`;
+      heart.style.top = `${y}px`;
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 2000);
+    }
+    setInterval(createHeart, 600);
+
+    // Музыка по клику
+    const parejaImg = document.querySelector('.pareja-fixed');
+    const music = document.getElementById('bg-music');
+    let isPlaying = false;
+
+    parejaImg.addEventListener('click', () => {
+      if (isPlaying) {
+        music.pause();
+        isPlaying = false;
+      } else {
+        music.play();
+        isPlaying = true;
+      }
+    });
+  </script>
+</body>
+
+</html>

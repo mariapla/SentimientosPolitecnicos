@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/cross-solid.svg" type="image/x-icon">
+    <title>Curiosidad</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Roboto:wght@100;400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+        }
+
+
+        .fondo {
+            background-image: url(img/gato.jpg);
+            background-size: auto 300%;
+            /* Altura 300%, ancho proporcional */
+            background-position: right center;
+            /* Muestra la parte derecha */
+            background-repeat: no-repeat;
+
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+
+            filter: blur(0px);
+        }
+
+        .carga {
+            color: ghostwhite;
+            font-size: 3em;
+        }
+
+        .fundido {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: black;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .fundido.activo {
+            opacity: 1;
+        }
+
+        .epilogo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 3em;
+            font-family: 'Poppins', sans-serif;
+            opacity: 0;
+            transition: opacity 2s ease-in-out 1.5s;
+            /* aparece tras el fundido */
+            z-index: 2;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .epilogo.visible {
+            opacity: 1;
+        }
+
+        .boton-volver {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            background-color: white;
+            color: black;
+            border: none;
+            border-radius: 30px;
+            text-decoration: none;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 21;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .boton-volver.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="fondo"></div>
+    <div class="carga">0%</div>
+    <div class="fundido"></div>
+    <div class="epilogo">mató al gato</div>
+    <a href="index.html" class="boton-volver">Volver</a>
+
+
+    <script>
+        const texto = document.querySelector('.carga')
+        const fondo = document.querySelector('.fondo')
+        const fundido = document.querySelector('.fundido')
+        const epilogo = document.querySelector('.epilogo')
+        const botonVolver = document.querySelector('.boton-volver')
+
+        let carga = 0
+
+        let frecuencia = setInterval(desenfoque, 30)
+
+        function desenfoque() {
+            carga++
+
+            if (carga > 99) {
+                clearInterval(frecuencia)
+
+                // 1 segundo después de completar carga, se activa el fundido
+                setTimeout(() => {
+                    fundido.classList.add('activo')
+                }, 1000)
+
+                // 2.5 segundos después, aparece el mensaje y el botón
+                setTimeout(() => {
+                    epilogo.classList.add('visible')
+                    botonVolver.classList.add('visible')
+                }, 2500)
+            }
+
+            texto.innerText = `${carga}%`
+            texto.style.opacity = mapeo(carga, 0, 100, 1, 0)
+            fondo.style.filter = `blur(${mapeo(carga, 0, 100, 30, 0)}px)`
+        }
+
+        function mapeo(numero, entradaMin, entradaMax, salidaMin, salidaMax) {
+            return ((numero - entradaMin) * (salidaMax - salidaMin)) / (entradaMax - entradaMin) + salidaMin
+        }
+
+    </script>
+</body>
+
+</html>
