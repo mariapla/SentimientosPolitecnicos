@@ -4,6 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sentimientos</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="img/heart-solid.svg" />
+
   <style>
     html, body { height: 100%; }
     * { box-sizing: border-box; }
@@ -17,22 +21,25 @@
     #mosaico-viewport{
       display: grid;
       width: 100vw;
-      height: 100dvh;        /* respeta barras del navegador móvil */
+      height: 100dvh;
       grid-template-columns: repeat(6, minmax(0,1fr));
       grid-template-rows: repeat(2, 1fr);
       gap: 0;
     }
 
-    /* Celdas */
-    #mosaico-viewport > div{
+    /* Cada tarjeta es un <a> para semántica y accesibilidad */
+    #mosaico-viewport > a {
       display:flex; align-items:center; justify-content:center;
+      text-decoration: none;
       color:#fff; font-weight:800; user-select:none;
       font-size: clamp(18px, 2.2vw, 28px);
       margin:0; padding:0;
       text-shadow: 0 1px 0 rgba(0,0,0,.15);
+      transition: transform .08s ease;
     }
+    #mosaico-viewport > a:active { transform: scale(.985); }
 
-    /* Responsivo por si reduces el ancho */
+    /* Responsivo opcional */
     @media (max-width: 1024px){
       #mosaico-viewport{ grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(4,1fr); }
     }
@@ -42,36 +49,36 @@
   </style>
 </head>
 <body>
-  <main id="mosaico-viewport" aria-label="Mosaico de sentimientos">
-    <div>Felicidad</div>
-    <div>Regocijo</div>
-    <div>Asco</div>
-    <div>Curiosidad</div>
-    <div>Amor</div>
-    <div>Nostalgia</div>
-    <div>Tristeza</div>
-    <div>Ira</div>
-    <div>Indiferente</div>
-    <div>Culpa</div>
-    <div>Miedo</div>
-    <div>Soledad</div>
-  </main>
+  <main id="mosaico-viewport" aria-label="Mosaico de sentimientos"></main>
 
   <script>
-    // Mezcla de Fisher–Yates
-    function shuffle(arr){
-      for(let i=arr.length-1;i>0;i--){
-        const j=Math.floor(Math.random()*(i+1));
-        [arr[i],arr[j]]=[arr[j],arr[i]];
-      }
-      return arr;
-    }
+    // ==== Configura esto si tus HTML están en otra carpeta ====
+    const BASE_PATH = "./pages/"; // por ejemplo "./", "./emociones/", etc.
+    // ==========================================================
 
-    // 12 colores vibrantes (puedes ajustarlos)
+    // Nombres visibles (en el mismo orden de tu diseño de referencia)
+    const LABELS = [
+      "Felicidad","Regocijo","Asco","Curiosidad","Amor","Nostalgia",
+      "Tristeza","Ira","Indiferente","Culpa","Miedo","Soledad"
+    ];
+
+    // Genera slug sin acentos: "Curiosidad" -> "curiosidad.html"
+    const toSlug = s => s
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita acentos
+      .toLowerCase().replace(/\s+/g, "-");
+
+    // Si tus archivos tienen otro nombre, cambia aquí la ruta concreta:
+    // const LINKS = { Felicidad: "feliz.html", ... }
+    const LINKS = Object.fromEntries(LABELS.map(l => [l, `${BASE_PATH}${toSlug(l)}.html`]));
+
+    // Paleta de 12 colores (puedes ajustarla)
     const PALETTE=[
       "#44df79","#2b22ef","#594fce","#c243d6","#c92fe5","#3870c9",
       "#4a7ed6","#c43bd0","#df9639","#42d67e","#d530e4","#e1e01e"
     ];
+
+    // Mezcla Fisher–Yates
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
 
     // Texto negro si el fondo es muy claro
     function bestTextColor(hex){
@@ -83,17 +90,27 @@
     }
 
     (function init(){
-      const grid=document.getElementById("mosaico-viewport");
-      // 1) reordenar aleatoriamente
-      const tiles=[...grid.children];
-      shuffle(tiles).forEach(el=>grid.appendChild(el));
-      // 2) asignar colores sin repetir
-      const colors=shuffle(PALETTE.slice());
+      const grid = document.getElementById("mosaico-viewport");
+
+      // Crea las 12 tarjetas (<a>) con su href y target="_blank"
+      const items = LABELS.map(text => {
+        const a = document.createElement("a");
+        a.href = LINKS[text];
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = text;
+        return a;
+      });
+
+      // Mezcla orden y colores
+      shuffle(items).forEach(el => grid.appendChild(el));
+      const colors = shuffle(PALETTE.slice());
       [...grid.children].forEach((el,i)=>{
-        const color=colors[i%colors.length];
-        el.style.background=color;
-        el.style.color=bestTextColor(color);
-        el.style.textShadow = el.style.color==="#fff" ? "0 1px 0 rgba(0,0,0,.15)" : "none";
+        const color = colors[i % colors.length];
+        el.style.background = color;
+        const tc = bestTextColor(color);
+        el.style.color = tc;
+        el.style.textShadow = tc === "#fff" ? "0 1px 0 rgba(0,0,0,.15)" : "none";
       });
     })();
   </script>
