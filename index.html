@@ -40,16 +40,43 @@
     .culpa       { background:#42d67e; }
     .miedo       { background:#d530e4; }
     .soledad     { background:#e1e01e; }
+     /* Forzamos el layout y evitamos choques con frameworks */
+  #mosaico-viewport {
+    display: grid !important;
+    width: 100vw !important;
+    height: 100dvh !important;  /* en móviles respeta barras del navegador */
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 1fr) !important;
+    gap: 0 !important;
+  }
+
+  /* Centramos el texto en cada celda */
+  #mosaico-viewport > * {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 800;
+    color: #fff;
+    user-select: none;
+    font-size: clamp(18px, 2.2vw, 28px);
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
     @media (max-width: 1024px) {
       .grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); }
+          #mosaico-viewport { grid-template-columns: repeat(3, 1fr) !important; grid-template-rows: repeat(4, 1fr) !important; }
+
     }
     @media (max-width: 640px) {
       .grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(6, 1fr); }
+          #mosaico-viewport { grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: repeat(6, 1fr) !important; }
+
     }
   </style>
 </head>
 <body>
-  <main class="grid">
+ <main id="mosaico-viewport" aria-label="Mosaico de sentimientos">
     <div class="cell felicidad">Felicidad</div>
     <div class="cell regocijo">Regocijo</div>
     <div class="cell asco">Asco</div>
