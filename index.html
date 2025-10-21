@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="es">
 <head>
@@ -6,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sentimientos</title>
 
-  <!-- Favicon (si no existiera, más abajo dejo un fallback inline) -->
+  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="./img/heart-solid.svg" />
 
   <style>
@@ -18,15 +17,17 @@
       overflow: hidden; /* sin scroll */
     }
 
+    /* Contenedor a pantalla completa */
     #mosaico-viewport{
       display: grid;
       width: 100vw;
-      height: 100dvh;
+      height: 100dvh; /* respeta barras del navegador móvil */
       grid-template-columns: repeat(6, minmax(0,1fr));
       grid-template-rows: repeat(2, 1fr);
       gap: 0;
     }
 
+    /* Cada tarjeta es un <a> para que sea clicable y accesible */
     #mosaico-viewport > a {
       display:flex; align-items:center; justify-content:center;
       text-decoration: none;
@@ -38,6 +39,7 @@
     }
     #mosaico-viewport > a:active { transform: scale(.985); }
 
+    /* Responsivo opcional: 3x4 en tablet, 2x6 en móvil */
     @media (max-width: 1024px){
       #mosaico-viewport{ grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(4,1fr); }
     }
@@ -47,22 +49,33 @@
   </style>
 </head>
 <body>
-  <main id="mosaico-viewport" aria-label="Mosaico de sentimientos"></main>
+  <main id="mosaico-viewport" aria-label="Mosaico de sentimientos">
+    <!-- Enlaces EXACTOS a los ficheros que aparecen en tu repo -->
+    <a href="./felicidad.html"   target="_blank" rel="noopener noreferrer">Felicidad</a>
+    <a href="./regocijo.html"    target="_blank" rel="noopener noreferrer">Regocijo</a>
+    <a href="./asco.html"        target="_blank" rel="noopener noreferrer">Asco</a>
+    <a href="./curiosidad.html"  target="_blank" rel="noopener noreferrer">Curiosidad</a>
+    <a href="./amor.html"        target="_blank" rel="noopener noreferrer">Amor</a>
+    <a href="./nostalgia.html"   target="_blank" rel="noopener noreferrer">Nostalgia</a>
+    <a href="./tristeza.html"    target="_blank" rel="noopener noreferrer">Tristeza</a>
+    <a href="./ira.html"         target="_blank" rel="noopener noreferrer">Ira</a>
+    <a href="./indiferente.html" target="_blank" rel="noopener noreferrer">Indiferente</a>
+    <a href="./culpa.html"       target="_blank" rel="noopener noreferrer">Culpa</a>
+    <a href="./miedo.html"       target="_blank" rel="noopener noreferrer">Miedo</a>
+    <a href="./soledad.html"     target="_blank" rel="noopener noreferrer">Soledad</a>
+  </main>
 
   <script>
-    // ——— UTILIDADES ———
-    const LABELS = [
-      "Felicidad","Regocijo","Asco","Curiosidad","Amor","Nostalgia",
-      "Tristeza","Ira","Indiferente","Culpa","Miedo","Soledad"
-    ];
-
+    // Mezcla Fisher–Yates
     function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
 
-    function slugify(s){
-      return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-              .toLowerCase().replace(/\s+/g, "-");
-    }
+    // Paleta de 12 colores vibrantes
+    const PALETTE=[
+      "#44df79","#2b22ef","#594fce","#c243d6","#c92fe5","#3870c9",
+      "#4a7ed6","#c43bd0","#df9639","#42d67e","#d530e4","#e1e01e"
+    ];
 
+    // Texto negro si el fondo es muy claro
     function bestTextColor(hex){
       const c=hex.slice(1);
       const r=parseInt(c.substr(0,2),16)/255, g=parseInt(c.substr(2,2),16)/255, b=parseInt(c.substr(4,2),16)/255;
@@ -71,95 +84,22 @@
       return L>0.6 ? "#111" : "#fff";
     }
 
-    // ——— DETECCIÓN DE RUTAS ———
-    // Bases típicas (añade alguna carpeta si la usas)
-    const BASES = ["./", "./pages/", "./emociones/", "./html/", "./sentimientos/"];
-    // Para cada emoción intentamos: nombre.html, nombre/index.html
-    function candidatesFor(label){
-      const slug = slugify(label);
-      const files = [`${slug}.html`, `${slug}/index.html`];
-      const out = [];
-      for(const base of BASES){
-        for(const f of files){
-          out.push(base + f);
-        }
-      }
-      return out;
-    }
-
-    async function resolveFirstExisting(urls){
-      for(const url of urls){
-        try{
-          const res = await fetch(url, { method: "HEAD", mode: "cors", cache: "no-cache" });
-          if(res.ok){ return url; }
-        }catch(e){
-          // ignoramos y seguimos
-        }
-      }
-      return null;
-    }
-
-    // ——— INICIALIZACIÓN ———
-    (async function init(){
-      // Favicon fallback si el archivo no está
-      try{
-        const fav = "./img/heart-solid.svg";
-        const r = await fetch(fav, { method:"HEAD", mode:"cors" });
-        if(!r.ok){
-          const link = document.querySelector('link[rel="icon"]');
-          if(link) link.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="%23e63946" d="M23.6 3.4c-2.6 0-4.8 1.8-5.6 3.7-.8-1.9-3-3.7-5.6-3.7C8 3.4 5 6 5 10c0 6.2 8.7 10.8 13 16.6C18.3 20.8 27 16.2 27 10c0-4-3-6.6-3.4-6.6z"/></svg>';
-        }
-      }catch(_){/* nada */ }
-
+    (function init(){
       const grid = document.getElementById("mosaico-viewport");
 
-      // Creamos los elementos <a> sin href todavía
-      const anchors = LABELS.map(text => {
-        const a = document.createElement("a");
-        a.textContent = text;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.href = "#"; // provisional, lo resolvemos abajo
-        a.dataset.label = text;
-        return a;
-      });
+      // 1) Mezclar orden visual (los href se mantienen)
+      const items = Array.from(grid.children);
+      shuffle(items).forEach(el => grid.appendChild(el));
 
-      // Mezclamos visualmente
-      shuffle(anchors).forEach(a => grid.appendChild(a));
-
-      // Colores
-      const PALETTE=[
-        "#44df79","#2b22ef","#594fce","#c243d6","#c92fe5","#3870c9",
-        "#4a7ed6","#c43bd0","#df9639","#42d67e","#d530e4","#e1e01e"
-      ];
+      // 2) Asignar colores sin repetir
       const colors = shuffle(PALETTE.slice());
-      [...grid.children].forEach((el,i)=>{
+      Array.from(grid.children).forEach((el, i) => {
         const color = colors[i % colors.length];
         el.style.background = color;
         const tc = bestTextColor(color);
         el.style.color = tc;
         el.style.textShadow = tc === "#fff" ? "0 1px 0 rgba(0,0,0,.15)" : "none";
       });
-
-      // Resolución de rutas (HEAD) para cada emoción
-      await Promise.all([...grid.children].map(async (el) => {
-        const label = el.dataset.label;
-        const urls = candidatesFor(label);
-
-        // Si sabes algún archivo exacto distinto, puedes forzarlo aquí:
-        // if(label === "Felicidad") urls.unshift("./feliz.html");
-
-        const found = await resolveFirstExisting(urls);
-        if(found){
-          el.href = found;
-        }else{
-          // Si no se encuentra, quitamos _blank y enlazamos a la raíz como fallback
-          el.removeAttribute("target");
-          el.href = "./"; 
-          el.title = "No se encontró la página para: " + label;
-          console.warn("No se encontró ruta para", label, "probadas:", urls);
-        }
-      }));
     })();
   </script>
 </body>
