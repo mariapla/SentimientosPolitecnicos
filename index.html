@@ -9,86 +9,93 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      overflow: hidden;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      overflow: hidden; /* sin scroll */
     }
-    .grid {
+
+    /* Contenedor a pantalla completa */
+    #mosaico-viewport{
       display: grid;
       width: 100vw;
-      height: 100svh;
-      grid-template-columns: repeat(6, 1fr);
+      height: 100dvh;        /* respeta barras del navegador móvil */
+      grid-template-columns: repeat(6, minmax(0,1fr));
       grid-template-rows: repeat(2, 1fr);
+      gap: 0;
     }
-    .cell {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 800;
+
+    /* Celdas */
+    #mosaico-viewport > div{
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-weight:800; user-select:none;
       font-size: clamp(18px, 2.2vw, 28px);
-      user-select: none;
+      margin:0; padding:0;
+      text-shadow: 0 1px 0 rgba(0,0,0,.15);
     }
-    .felicidad   { background:#44df79; }
-    .regocijo    { background:#2b22ef; }
-    .asco        { background:#594fce; }
-    .curiosidad  { background:#c243d6; }
-    .amor        { background:#c92fe5; }
-    .nostalgia   { background:#3870c9; }
-    .tristeza    { background:#4a7ed6; }
-    .ira         { background:#c43bd0; }
-    .indiferente { background:#df9639; }
-    .culpa       { background:#42d67e; }
-    .miedo       { background:#d530e4; }
-    .soledad     { background:#e1e01e; }
-     /* Forzamos el layout y evitamos choques con frameworks */
-  #mosaico-viewport {
-    display: grid !important;
-    width: 100vw !important;
-    height: 100dvh !important;  /* en móviles respeta barras del navegador */
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    grid-template-rows: repeat(2, 1fr) !important;
-    gap: 0 !important;
-  }
 
-  /* Centramos el texto en cada celda */
-  #mosaico-viewport > * {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-weight: 800;
-    color: #fff;
-    user-select: none;
-    font-size: clamp(18px, 2.2vw, 28px);
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-    @media (max-width: 1024px) {
-      .grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); }
-          #mosaico-viewport { grid-template-columns: repeat(3, 1fr) !important; grid-template-rows: repeat(4, 1fr) !important; }
-
+    /* Responsivo por si reduces el ancho */
+    @media (max-width: 1024px){
+      #mosaico-viewport{ grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(4,1fr); }
     }
-    @media (max-width: 640px) {
-      .grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(6, 1fr); }
-          #mosaico-viewport { grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: repeat(6, 1fr) !important; }
-
+    @media (max-width: 640px){
+      #mosaico-viewport{ grid-template-columns: repeat(2,1fr); grid-template-rows: repeat(6,1fr); }
     }
   </style>
 </head>
 <body>
- <main id="mosaico-viewport" aria-label="Mosaico de sentimientos">
-    <div class="cell felicidad">Felicidad</div>
-    <div class="cell regocijo">Regocijo</div>
-    <div class="cell asco">Asco</div>
-    <div class="cell curiosidad">Curiosidad</div>
-    <div class="cell amor">Amor</div>
-    <div class="cell nostalgia">Nostalgia</div>
-    <div class="cell tristeza">Tristeza</div>
-    <div class="cell ira">Ira</div>
-    <div class="cell indiferente">Indiferente</div>
-    <div class="cell culpa">Culpa</div>
-    <div class="cell miedo">Miedo</div>
-    <div class="cell soledad">Soledad</div>
+  <main id="mosaico-viewport" aria-label="Mosaico de sentimientos">
+    <div>Felicidad</div>
+    <div>Regocijo</div>
+    <div>Asco</div>
+    <div>Curiosidad</div>
+    <div>Amor</div>
+    <div>Nostalgia</div>
+    <div>Tristeza</div>
+    <div>Ira</div>
+    <div>Indiferente</div>
+    <div>Culpa</div>
+    <div>Miedo</div>
+    <div>Soledad</div>
   </main>
+
+  <script>
+    // Mezcla de Fisher–Yates
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+      }
+      return arr;
+    }
+
+    // 12 colores vibrantes (puedes ajustarlos)
+    const PALETTE=[
+      "#44df79","#2b22ef","#594fce","#c243d6","#c92fe5","#3870c9",
+      "#4a7ed6","#c43bd0","#df9639","#42d67e","#d530e4","#e1e01e"
+    ];
+
+    // Texto negro si el fondo es muy claro
+    function bestTextColor(hex){
+      const c=hex.slice(1);
+      const r=parseInt(c.substr(0,2),16)/255, g=parseInt(c.substr(2,2),16)/255, b=parseInt(c.substr(4,2),16)/255;
+      const toLin=v=> v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4);
+      const L=0.2126*toLin(r)+0.7152*toLin(g)+0.0722*toLin(b);
+      return L>0.6 ? "#111" : "#fff";
+    }
+
+    (function init(){
+      const grid=document.getElementById("mosaico-viewport");
+      // 1) reordenar aleatoriamente
+      const tiles=[...grid.children];
+      shuffle(tiles).forEach(el=>grid.appendChild(el));
+      // 2) asignar colores sin repetir
+      const colors=shuffle(PALETTE.slice());
+      [...grid.children].forEach((el,i)=>{
+        const color=colors[i%colors.length];
+        el.style.background=color;
+        el.style.color=bestTextColor(color);
+        el.style.textShadow = el.style.color==="#fff" ? "0 1px 0 rgba(0,0,0,.15)" : "none";
+      });
+    })();
+  </script>
 </body>
 </html>
