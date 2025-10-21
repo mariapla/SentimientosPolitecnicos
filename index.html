@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -5,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sentimientos</title>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="img/heart-solid.svg" />
+  <!-- Favicon (si no existiera, más abajo dejo un fallback inline) -->
+  <link rel="icon" type="image/svg+xml" href="./img/heart-solid.svg" />
 
   <style>
     html, body { height: 100%; }
@@ -17,7 +18,6 @@
       overflow: hidden; /* sin scroll */
     }
 
-    /* Contenedor a pantalla completa */
     #mosaico-viewport{
       display: grid;
       width: 100vw;
@@ -27,7 +27,6 @@
       gap: 0;
     }
 
-    /* Cada tarjeta es un <a> para semántica y accesibilidad */
     #mosaico-viewport > a {
       display:flex; align-items:center; justify-content:center;
       text-decoration: none;
@@ -39,7 +38,6 @@
     }
     #mosaico-viewport > a:active { transform: scale(.985); }
 
-    /* Responsivo opcional */
     @media (max-width: 1024px){
       #mosaico-viewport{ grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(4,1fr); }
     }
@@ -52,35 +50,19 @@
   <main id="mosaico-viewport" aria-label="Mosaico de sentimientos"></main>
 
   <script>
-    // ==== Configura esto si tus HTML están en otra carpeta ====
-    const BASE_PATH = "./pages/"; // por ejemplo "./", "./emociones/", etc.
-    // ==========================================================
-
-    // Nombres visibles (en el mismo orden de tu diseño de referencia)
+    // ——— UTILIDADES ———
     const LABELS = [
       "Felicidad","Regocijo","Asco","Curiosidad","Amor","Nostalgia",
       "Tristeza","Ira","Indiferente","Culpa","Miedo","Soledad"
     ];
 
-    // Genera slug sin acentos: "Curiosidad" -> "curiosidad.html"
-    const toSlug = s => s
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita acentos
-      .toLowerCase().replace(/\s+/g, "-");
-
-    // Si tus archivos tienen otro nombre, cambia aquí la ruta concreta:
-    // const LINKS = { Felicidad: "feliz.html", ... }
-    const LINKS = Object.fromEntries(LABELS.map(l => [l, `${BASE_PATH}${toSlug(l)}.html`]));
-
-    // Paleta de 12 colores (puedes ajustarla)
-    const PALETTE=[
-      "#44df79","#2b22ef","#594fce","#c243d6","#c92fe5","#3870c9",
-      "#4a7ed6","#c43bd0","#df9639","#42d67e","#d530e4","#e1e01e"
-    ];
-
-    // Mezcla Fisher–Yates
     function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
 
-    // Texto negro si el fondo es muy claro
+    function slugify(s){
+      return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .toLowerCase().replace(/\s+/g, "-");
+    }
+
     function bestTextColor(hex){
       const c=hex.slice(1);
       const r=parseInt(c.substr(0,2),16)/255, g=parseInt(c.substr(2,2),16)/255, b=parseInt(c.substr(4,2),16)/255;
@@ -89,21 +71,67 @@
       return L>0.6 ? "#111" : "#fff";
     }
 
-    (function init(){
+    // ——— DETECCIÓN DE RUTAS ———
+    // Bases típicas (añade alguna carpeta si la usas)
+    const BASES = ["./", "./pages/", "./emociones/", "./html/", "./sentimientos/"];
+    // Para cada emoción intentamos: nombre.html, nombre/index.html
+    function candidatesFor(label){
+      const slug = slugify(label);
+      const files = [`${slug}.html`, `${slug}/index.html`];
+      const out = [];
+      for(const base of BASES){
+        for(const f of files){
+          out.push(base + f);
+        }
+      }
+      return out;
+    }
+
+    async function resolveFirstExisting(urls){
+      for(const url of urls){
+        try{
+          const res = await fetch(url, { method: "HEAD", mode: "cors", cache: "no-cache" });
+          if(res.ok){ return url; }
+        }catch(e){
+          // ignoramos y seguimos
+        }
+      }
+      return null;
+    }
+
+    // ——— INICIALIZACIÓN ———
+    (async function init(){
+      // Favicon fallback si el archivo no está
+      try{
+        const fav = "./img/heart-solid.svg";
+        const r = await fetch(fav, { method:"HEAD", mode:"cors" });
+        if(!r.ok){
+          const link = document.querySelector('link[rel="icon"]');
+          if(link) link.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="%23e63946" d="M23.6 3.4c-2.6 0-4.8 1.8-5.6 3.7-.8-1.9-3-3.7-5.6-3.7C8 3.4 5 6 5 10c0 6.2 8.7 10.8 13 16.6C18.3 20.8 27 16.2 27 10c0-4-3-6.6-3.4-6.6z"/></svg>';
+        }
+      }catch(_){/* nada */ }
+
       const grid = document.getElementById("mosaico-viewport");
 
-      // Crea las 12 tarjetas (<a>) con su href y target="_blank"
-      const items = LABELS.map(text => {
+      // Creamos los elementos <a> sin href todavía
+      const anchors = LABELS.map(text => {
         const a = document.createElement("a");
-        a.href = LINKS[text];
+        a.textContent = text;
         a.target = "_blank";
         a.rel = "noopener noreferrer";
-        a.textContent = text;
+        a.href = "#"; // provisional, lo resolvemos abajo
+        a.dataset.label = text;
         return a;
       });
 
-      // Mezcla orden y colores
-      shuffle(items).forEach(el => grid.appendChild(el));
+      // Mezclamos visualmente
+      shuffle(anchors).forEach(a => grid.appendChild(a));
+
+      // Colores
+      const PALETTE=[
+        "#44df79","#2b22ef","#594fce","#c243d6","#c92fe5","#3870c9",
+        "#4a7ed6","#c43bd0","#df9639","#42d67e","#d530e4","#e1e01e"
+      ];
       const colors = shuffle(PALETTE.slice());
       [...grid.children].forEach((el,i)=>{
         const color = colors[i % colors.length];
@@ -112,6 +140,26 @@
         el.style.color = tc;
         el.style.textShadow = tc === "#fff" ? "0 1px 0 rgba(0,0,0,.15)" : "none";
       });
+
+      // Resolución de rutas (HEAD) para cada emoción
+      await Promise.all([...grid.children].map(async (el) => {
+        const label = el.dataset.label;
+        const urls = candidatesFor(label);
+
+        // Si sabes algún archivo exacto distinto, puedes forzarlo aquí:
+        // if(label === "Felicidad") urls.unshift("./feliz.html");
+
+        const found = await resolveFirstExisting(urls);
+        if(found){
+          el.href = found;
+        }else{
+          // Si no se encuentra, quitamos _blank y enlazamos a la raíz como fallback
+          el.removeAttribute("target");
+          el.href = "./"; 
+          el.title = "No se encontró la página para: " + label;
+          console.warn("No se encontró ruta para", label, "probadas:", urls);
+        }
+      }));
     })();
   </script>
 </body>
