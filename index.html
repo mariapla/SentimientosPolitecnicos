@@ -1,101 +1,67 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="shortcut icon" href="img/heart-solid.svg" type="image/x-icon">
-  <title>Sentimientos Politécnicos</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sentimientos</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    html, body { height: 100%; }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f5f5;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow: hidden;
     }
-
-    .rejilla {
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      grid-auto-rows: minmax(150px, 1fr);
       width: 100vw;
-      height: 100vh;
+      height: 100svh;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(2, 1fr);
     }
-
-    .tarjeta {
+    .cell {
       display: flex;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: white;
-      text-decoration: none;
-      transition: transform 0.2s ease, filter 0.3s;
-      padding: 1rem;
+      color: #fff;
+      font-weight: 800;
+      font-size: clamp(18px, 2.2vw, 28px);
+      user-select: none;
     }
-
-    .tarjeta:hover {
-      transform: scale(1.03);
-      filter: brightness(1.1);
+    .felicidad   { background:#44df79; }
+    .regocijo    { background:#2b22ef; }
+    .asco        { background:#594fce; }
+    .curiosidad  { background:#c243d6; }
+    .amor        { background:#c92fe5; }
+    .nostalgia   { background:#3870c9; }
+    .tristeza    { background:#4a7ed6; }
+    .ira         { background:#c43bd0; }
+    .indiferente { background:#df9639; }
+    .culpa       { background:#42d67e; }
+    .miedo       { background:#d530e4; }
+    .soledad     { background:#e1e01e; }
+    @media (max-width: 1024px) {
+      .grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); }
     }
-
-    @media (max-width: 600px) {
-      .tarjeta {
-        font-size: 1.2rem;
-        padding: 1rem;
-      }
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(6, 1fr); }
     }
   </style>
 </head>
 <body>
-  <div class="rejilla" id="contenedor-tarjetas"></div>
-
-  <script>
-    const sentimientos = [
-      { nombre: 'Ira', archivo: 'ira.html' },
-      { nombre: 'Miedo', archivo: 'miedo.html' },
-      { nombre: 'Asco', archivo: 'asco.html' },
-      { nombre: 'Felicidad', archivo: 'felicidad.html' },
-      { nombre: 'Culpa', archivo: 'culpa.html' },
-      { nombre: 'Tristeza', archivo: 'tristeza.html' },
-      { nombre: 'Soledad', archivo: 'soledad.html' },
-      { nombre: 'Indiferente', archivo: 'indiferente.html' },
-      // { nombre: 'Esperanza', archivo: 'esperanza.html' },
-      { nombre: 'Amor', archivo: 'amor.html' },
-      { nombre: 'Nostalgia', archivo: 'nostalgia.html' },
-      { nombre: 'Curiosidad', archivo: 'curiosidad.html' },
-      { nombre: 'Regocijo', archivo: 'regocijo.html' } // cambiar cuando se defina
-    ];
-
-    function mezclar(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    function colorAleatorio() {
-      const tono = Math.floor(Math.random() * 360);
-      const saturacion = 60 + Math.random() * 20;
-      const claridad = 50 + Math.random() * 10;
-      return `hsl(${tono}, ${saturacion}%, ${claridad}%)`;
-    }
-
-    const contenedor = document.getElementById('contenedor-tarjetas');
-    const seleccionados = mezclar(sentimientos).slice(0, 12);
-
-    seleccionados.forEach(sentimiento => {
-      const enlace = document.createElement('a');
-      enlace.href = sentimiento.archivo;
-      enlace.className = 'tarjeta';
-      enlace.textContent = sentimiento.nombre;
-      enlace.style.backgroundColor = colorAleatorio();
-      contenedor.appendChild(enlace);
-    });
-  </script>
+  <main class="grid">
+    <div class="cell felicidad">Felicidad</div>
+    <div class="cell regocijo">Regocijo</div>
+    <div class="cell asco">Asco</div>
+    <div class="cell curiosidad">Curiosidad</div>
+    <div class="cell amor">Amor</div>
+    <div class="cell nostalgia">Nostalgia</div>
+    <div class="cell tristeza">Tristeza</div>
+    <div class="cell ira">Ira</div>
+    <div class="cell indiferente">Indiferente</div>
+    <div class="cell culpa">Culpa</div>
+    <div class="cell miedo">Miedo</div>
+    <div class="cell soledad">Soledad</div>
+  </main>
 </body>
 </html>
